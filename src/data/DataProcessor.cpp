@@ -4,7 +4,7 @@ uint8_t DataProcessor::getHeartrate(uint8_t data[])
 {
     uint8_t plusCounter = 0, minusCounter = 0;
     uint8_t beats = 0;
-    for (unsigned int i = 0; i < SAMPLE_LENGTH; i++) {
+    for (unsigned int i = 0; i < HEARTBEAT_SAMPLE_LENGTH; i++) {
         if (data[i] >= HEARTBEAT_THRESHOLD) {
             if (minusCounter > HEARTBEAT_MAX_PEAK_LENGTH) {
                 plusCounter = minusCounter = 0;
@@ -24,5 +24,5 @@ uint8_t DataProcessor::getHeartrate(uint8_t data[])
         beats++;
     }
 
-    return beats * (60 / (SAMPLING_TIME / 1000));
+    return beats * (60 / (HEARTBEAT_SAMPLING_TIME / 1000));
 }

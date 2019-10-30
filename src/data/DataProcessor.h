@@ -3,11 +3,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#include <device/HeartbeatSensor.h>
-
-#define HEARTBEAT_THRESHOLD 128
-#define HEARTBEAT_MIN_LENGTH 3
-#define HEARTBEAT_MAX_PEAK_LENGTH 3
+#include <Config.h>
 
 class DataProcessor {
 private:

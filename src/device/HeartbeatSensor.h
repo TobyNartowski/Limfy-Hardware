@@ -2,15 +2,12 @@
 
 #include <Arduino.h>
 
-#define SAMPLING_TIME 12000
-#define SAMPLING_DELAY 30
-
-#define SAMPLE_LENGTH SAMPLING_TIME / SAMPLING_DELAY
+#include <Config.h>
 
 class HeartbeatSensor {
 private:
     uint8_t sensorPin;
-    uint8_t currentSamples[SAMPLE_LENGTH];
+    uint8_t currentSamples[HEARTBEAT_SAMPLE_LENGTH];
     unsigned int samplePointer = 0;
     unsigned long timestamp;
 
