@@ -2,6 +2,7 @@
 
 /* Pins */
 #define PIN_HEARTBEAT_SENSOR A0
+#define PIN_VIBRATION_MODULE 5
 
 /* Heartbeat data */
 #define HEARTBEAT_THRESHOLD 128
