@@ -1,23 +1,27 @@
 #include "Display.h"
 
-Display::Display() {
-    display = U8GLIB_SH1106_128X64(U8G_I2C_OPT_DEV_0 | U8G_I2C_OPT_FAST);
-    display.setColorIndex(1);
-    display.setFont(u8g_font_unifont);
+Display::Display()
+{
+    display.setFont(u8x8_font_7x14_1x2_r);
     display.begin();
 }
 
-uint8_t Display::draw()
+void Display::drawString(String text)
 {
-    return display.nextPage();
+    display.drawString(0, 0, text.c_str());
 }
 
-void Display::readyToDraw()
+void Display::drawHeartrate(uint8_t heartrate)
 {
-    display.firstPage();
-}
+    if (heartrateBuffer != heartrate) {
+        display.clearLine(0);
+        display.clearLine(1);
+        if (heartrate == 255) {
+            display.drawString(0, 0, "No data");
+        } else {
+            display.drawString(0, 0, ("BPM: " + String(heartrate)).c_str());
+        }
+    }
 
-void Display::drawCenterString(String text)
-{
-    display.drawStr((64 - ((text.length() * 8) / 2)), 36, text.c_str());
+    heartrateBuffer = heartrate;
 }

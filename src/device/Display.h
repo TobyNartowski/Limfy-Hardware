@@ -1,14 +1,16 @@
 #pragma once
 
-#include <U8glib.h>
+#include <Arduino.h>
+#include <U8g2lib.h>
 
 class Display {
 private:
-    U8GLIB_SH1106_128X64 display;
+    U8X8_SH1106_128X64_VCOMH0_HW_I2C display;
+    uint8_t heartrateBuffer = 0;
 public:
     Display();
     void readyToDraw();
-    uint8_t draw();
-
-    void drawCenterString(String text);
+    void sendBuffer();
+    void drawString(String text);
+    void drawHeartrate(uint8_t heartrate);
 };

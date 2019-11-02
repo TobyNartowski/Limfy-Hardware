@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <U8g2lib.h>
 
 #include <Config.h>
 #include <data/DataProcessor.h>
@@ -15,6 +16,8 @@ AccelerometerSensor *accelerometerSensor;
 VibrationModule *vibrationModule;
 TouchSensor *touchSensor;
 
+uint8_t heartrate = 255;
+
 void setup()
 {
     Serial.begin(115200);
@@ -24,20 +27,17 @@ void setup()
     accelerometerSensor = new AccelerometerSensor();
     vibrationModule = new VibrationModule(PIN_VIBRATION_MODULE);
     touchSensor = new TouchSensor(PIN_TOUCH_SENSOR);
+    
+    // display.begin();
 
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
 }
 
 void loop()
-{
-    display->readyToDraw();
-    
+{    
     if (heartbeatSensor->fetchData()) {
-        vibrationModule->vibrateNotification();
-        uint8_t heartrate = DataProcessor::getHeartrate(heartbeatSensor->getAllMeasurements());
-        Serial.println(heartrate);
-        
+        heartrate = DataProcessor::getHeartrate(heartbeatSensor->getAllMeasurements());        
         heartbeatSensor->clearMeasurements();
     }
 
@@ -47,11 +47,11 @@ void loop()
         accelerometerSensor->clearMeasurements();
     }
 
-    do {
-        if (touchSensor->isTouched()) {
-            display->drawCenterString("In development");
-        }
-    } while (display->draw());
+    if (touchSensor->isTouched()) {
+        vibrationModule->vibrate(30);
+    }
+
+    display->drawHeartrate(heartrate);
 
     delay(10);
 }
