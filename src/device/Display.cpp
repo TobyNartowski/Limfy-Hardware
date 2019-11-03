@@ -13,15 +13,22 @@ void Display::drawString(String text)
 
 void Display::drawHeartrate(uint8_t heartrate)
 {
-    if (heartrateBuffer != heartrate) {
-        display.clearLine(0);
-        display.clearLine(1);
-        if (heartrate == 255) {
-            display.drawString(0, 0, "No data");
-        } else {
-            display.drawString(0, 0, ("BPM: " + String(heartrate)).c_str());
-        }
+    display.clearLine(0);
+    display.clearLine(1);
+    if (heartrate == 0) {
+        display.drawString(0, 0, "No data");
+    } else {
+        display.drawString(0, 0, ("BPM: " + String(heartrate)).c_str());
     }
+}
 
-    heartrateBuffer = heartrate;
+void Display::drawAccelerometerData(uint8_t steps, uint8_t shakiness)
+{
+    display.clearLine(2);
+    display.clearLine(3);
+    display.drawString(0, 10, ("Steps: " + String(steps)).c_str());
+
+    display.clearLine(4);
+    display.clearLine(5);
+    display.drawString(0, 20, ("Shakiness: " + String(shakiness)).c_str());
 }

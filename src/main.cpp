@@ -15,8 +15,10 @@ HeartbeatSensor *heartbeatSensor;
 AccelerometerSensor *accelerometerSensor;
 VibrationModule *vibrationModule;
 TouchSensor *touchSensor;
+DataProcessor *dataProcessor;
 
-uint8_t heartrate = 255;
+uint8_t heartrate = 0, steps = 0;
+uint16_t shakiness = 0;
 
 void setup()
 {
@@ -27,31 +29,34 @@ void setup()
     accelerometerSensor = new AccelerometerSensor();
     vibrationModule = new VibrationModule(PIN_VIBRATION_MODULE);
     touchSensor = new TouchSensor(PIN_TOUCH_SENSOR);
-    
-    // display.begin();
 
     pinMode(13, OUTPUT);
     digitalWrite(13, HIGH);
+
+    display->drawString("Collecting data...");
 }
 
 void loop()
 {    
     if (heartbeatSensor->fetchData()) {
-        heartrate = DataProcessor::getHeartrate(heartbeatSensor->getAllMeasurements());        
+        heartrate = dataProcessor->getHeartrateData(heartbeatSensor->getAllMeasurements());        
         heartbeatSensor->clearMeasurements();
+
+        display->drawHeartrate(heartrate);
+        display->drawAccelerometerData(steps, shakiness);
+
+        heartrate = steps = shakiness = 0;
     }
 
     if (accelerometerSensor->fetchData()) {
-        AccelerometerModel *data = accelerometerSensor->getAllMeasurements();
-
+        steps += dataProcessor->getAccelerometerSteps(accelerometerSensor->getAllMeasurements());
+        shakiness += dataProcessor->getAccelerometerShakiness(accelerometerSensor->getAllMeasurements());
         accelerometerSensor->clearMeasurements();
     }
 
     if (touchSensor->isTouched()) {
         vibrationModule->vibrate(30);
     }
-
-    display->drawHeartrate(heartrate);
 
     delay(10);
 }

@@ -12,22 +12,22 @@ bool AccelerometerSensor::fetchData()
 {
     if (millis() - timestamp > ACCELEROMETER_SAMPLING_DELAY) {
         sensor.read();
-         currentSamples[samplePointer] = {sensor.x, sensor.y, sensor.z};
+         currentSamples[samplePointer] = abs(sensor.x + sensor.y + sensor.z);
 
          timestamp = millis();
          samplePointer++;
     }
 
-    return samplePointer == (ACCELEROMETER_SAMPLING_LENGTH - 1) ? true : false;
+    return samplePointer == (ACCELEROMETER_SAMPLE_LENGTH - 1) ? true : false;
 }
 
-AccelerometerModel *AccelerometerSensor::getAllMeasurements()
+uint16_t *AccelerometerSensor::getAllMeasurements()
 {
     return currentSamples;
 }
 
 void AccelerometerSensor::clearMeasurements()
 {
-        memset(currentSamples, 0, ACCELEROMETER_SAMPLING_LENGTH);
+        memset(currentSamples, 0, ACCELEROMETER_SAMPLE_LENGTH);
         samplePointer = 0;
 }
