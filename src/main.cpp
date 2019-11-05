@@ -8,6 +8,7 @@
 #include <device/VibrationModule.h>
 #include <device/TouchSensor.h>
 #include <device/Display.h>
+#include <device/CommunicationModule.h>
 
 /* Device classes declarations */
 Display *display;
@@ -16,6 +17,7 @@ AccelerometerSensor *accelerometerSensor;
 VibrationModule *vibrationModule;
 TouchSensor *touchSensor;
 DataProcessor *dataProcessor;
+CommunicationModule *communicationModule;
 
 uint8_t heartrate = 0, steps = 0;
 uint16_t shakiness = 0;
@@ -23,17 +25,27 @@ uint16_t shakiness = 0;
 void setup()
 {
     Serial.begin(115200);
+    pinMode(13, OUTPUT);
 
     display = new Display();
+    display->drawString("Booting up...");
+
     heartbeatSensor = new HeartbeatSensor(PIN_HEARTBEAT_SENSOR);
     accelerometerSensor = new AccelerometerSensor();
     vibrationModule = new VibrationModule(PIN_VIBRATION_MODULE);
     touchSensor = new TouchSensor(PIN_TOUCH_SENSOR);
+    communicationModule = new CommunicationModule();
+    
+    display->drawString("Connecting...");
 
-    pinMode(13, OUTPUT);
+    while (!communicationModule->checkConnection()) {
+        delay(1000);
+    }
+    communicationModule->initNetwork();
+
     digitalWrite(13, HIGH);
 
-    display->drawString("Collecting data...");
+    display->drawString("Data...");
 }
 
 void loop()

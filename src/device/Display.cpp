@@ -8,6 +8,7 @@ Display::Display()
 
 void Display::drawString(String text)
 {
+    display.clearDisplay();
     display.drawString(0, 0, text.c_str());
 }
 
