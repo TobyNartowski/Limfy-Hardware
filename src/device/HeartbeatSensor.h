@@ -6,15 +6,13 @@
 
 class HeartbeatSensor {
 private:
-    uint8_t sensorPin;
-    uint8_t currentSamples[HEARTBEAT_SAMPLE_LENGTH];
-    unsigned int samplePointer = 0;
+    uint16_t pointer = 0;
     unsigned long timestamp;
+    uint8_t plusCounter = 0, minusCounter = 0, beats = 0;
 
 public:
-    HeartbeatSensor(uint8_t sensorPin);
+    HeartbeatSensor();
 
     bool fetchData();
-    uint8_t *getAllMeasurements();
-    void clearMeasurements();
+    uint8_t getHeartrate();
 };

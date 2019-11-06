@@ -11,6 +11,10 @@ private:
     String readSerial(unsigned long timeout);
 public:
     CommunicationModule();
+    void begin();
+    void reset();
     bool checkConnection();
     void initNetwork();
+    void sendData();
+    String executeCommand(String command, unsigned long delayMs);
 };

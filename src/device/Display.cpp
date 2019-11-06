@@ -6,10 +6,10 @@ Display::Display()
     display.begin();
 }
 
-void Display::drawString(String text)
+void Display::drawCenter(String text)
 {
     display.clearDisplay();
-    display.drawString(0, 0, text.c_str());
+    display.drawString(display.getCols() / 2 - (text.length() / 2), display.getRows() /2 - 1, text.c_str());
 }
 
 void Display::drawHeartrate(uint8_t heartrate)

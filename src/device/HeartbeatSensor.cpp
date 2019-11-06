@@ -1,30 +1,35 @@
 #include "HeartbeatSensor.h"
 
-HeartbeatSensor::HeartbeatSensor(uint8_t sensorPin) {
-    this->sensorPin = sensorPin;
+HeartbeatSensor::HeartbeatSensor() {
     timestamp = millis();
-    memset(currentSamples, 0, HEARTBEAT_SAMPLE_LENGTH);
 }
 
 bool HeartbeatSensor::fetchData() {
     if (millis() - timestamp > HEARTBEAT_SAMPLING_DELAY) {
-        uint8_t rawValue = analogRead(sensorPin);
-        currentSamples[samplePointer] = rawValue;
+        if (analogRead(PIN_HEARTBEAT_SENSOR) >= HEARTBEAT_THRESHOLD) {
+            if (minusCounter > HEARTBEAT_MAX_PEAK_LENGTH) {
+                plusCounter = minusCounter = 0;
+            }
+            plusCounter++;
+        } else {
+            minusCounter++;
+        }
+        
+        if (minusCounter > HEARTBEAT_MAX_PEAK_LENGTH && plusCounter > HEARTBEAT_MIN_LENGTH) {
+            plusCounter = minusCounter = 0;
+            beats++;
+        }
 
         timestamp = millis();
-        samplePointer++;
+        pointer++;
     }
 
-    return samplePointer == (HEARTBEAT_SAMPLE_LENGTH - 1) ? true : false;
+    return pointer == (HEARTBEAT_SAMPLE_LENGTH - 1);
 }
 
-uint8_t *HeartbeatSensor::getAllMeasurements()
+uint8_t HeartbeatSensor::getHeartrate()
 {
-    return currentSamples;
-}
-
-void HeartbeatSensor::clearMeasurements()
-{
-        memset(currentSamples, 0, HEARTBEAT_SAMPLE_LENGTH);
-        samplePointer = 0;
+    uint8_t bufferBeats = beats;
+    pointer = plusCounter = minusCounter = beats = 0;
+    return bufferBeats * (60 / (HEARTBEAT_SAMPLING_TIME / 1000));
 }

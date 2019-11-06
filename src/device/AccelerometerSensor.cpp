@@ -5,29 +5,44 @@ AccelerometerSensor::AccelerometerSensor()
     sensor.begin();
     sensor.setRange(LIS3DH_RANGE_4_G);
     timestamp = millis();
-    memset(currentSamples, 0, HEARTBEAT_SAMPLE_LENGTH);
 }
 
 bool AccelerometerSensor::fetchData()
 {
     if (millis() - timestamp > ACCELEROMETER_SAMPLING_DELAY) {
         sensor.read();
-         currentSamples[samplePointer] = abs(sensor.x + sensor.y + sensor.z);
+        uint16_t measurement = abs(sensor.x + sensor.y + sensor.z);
+        if (pointer) {
+            int16_t comparison = abs(measurement - buffer);
+            if (comparison > ACCELEROMETER_STEPS_THRESHOLD && abs(pointer - detect) > 5) {
+                stepsCounter++;
+                detect = pointer;
+            }
 
-         timestamp = millis();
-         samplePointer++;
+            if (comparison > ACCELEROMETER_SHAKE_THRESHOLD) {
+                shakeCounter++;
+            }
+        }
+
+        buffer = measurement;
+        timestamp = millis();
+        pointer++;
     }
-
-    return samplePointer == (ACCELEROMETER_SAMPLE_LENGTH - 1) ? true : false;
+    
+    return pointer == (ACCELEROMETER_SAMPLE_LENGTH - 2);
 }
 
-uint16_t *AccelerometerSensor::getAllMeasurements()
+uint8_t AccelerometerSensor::getSteps()
 {
-    return currentSamples;
+    return stepsCounter;
+}
+
+uint8_t AccelerometerSensor::getShakiness()
+{
+    return shakeCounter;
 }
 
 void AccelerometerSensor::clearMeasurements()
 {
-        memset(currentSamples, 0, ACCELEROMETER_SAMPLE_LENGTH);
-        samplePointer = 0;
+    pointer = buffer = detect = stepsCounter = shakeCounter = 0;
 }

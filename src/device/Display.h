@@ -10,7 +10,7 @@ public:
     Display();
     void readyToDraw();
     void sendBuffer();
-    void drawString(String text);
+    void drawCenter(String text);
     void drawHeartrate(uint8_t heartrate);
     void drawAccelerometerData(uint8_t steps, uint8_t shakiness);
 };

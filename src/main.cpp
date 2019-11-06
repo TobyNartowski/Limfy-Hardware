@@ -2,7 +2,6 @@
 #include <U8g2lib.h>
 
 #include <Config.h>
-#include <data/DataProcessor.h>
 #include <device/HeartbeatSensor.h>
 #include <device/AccelerometerSensor.h>
 #include <device/VibrationModule.h>
@@ -16,7 +15,6 @@ HeartbeatSensor *heartbeatSensor;
 AccelerometerSensor *accelerometerSensor;
 VibrationModule *vibrationModule;
 TouchSensor *touchSensor;
-DataProcessor *dataProcessor;
 CommunicationModule *communicationModule;
 
 uint8_t heartrate = 0, steps = 0;
@@ -24,50 +22,86 @@ uint16_t shakiness = 0;
 
 void setup()
 {
-    Serial.begin(115200);
+    uint8_t bootCounter = 0;
+
+    Serial.begin(9600);
     pinMode(13, OUTPUT);
+    digitalWrite(13, LOW);
+
+    touchSensor = new TouchSensor(PIN_TOUCH_SENSOR);
+    Serial.println("touch");
+    delay(5000);
+    Serial.println("touchafter");
+    
+    accelerometerSensor = new AccelerometerSensor();
+    Serial.println("accelerometer");
+    delay(5000);
+    Serial.println("accelerometerafter");
+
+    delay(500);
+
+    Serial.println("init");
+    communicationModule = new CommunicationModule();
+     while (!communicationModule->checkConnection()) {
+        delay(5000);
+        bootCounter++;
+        if (bootCounter > 4) {
+            communicationModule->reset();
+            bootCounter = 0;
+        }
+    }
+
+    Serial.println("afterinit");
+    delay(2000);
+    Serial.println("network");
+    communicationModule->initNetwork();
+    Serial.println("afternetwork");
+    delay(5000);
+    Serial.println("afternetworkdelay");
+
+    heartbeatSensor = new HeartbeatSensor();
+    Serial.println("heartbeat");
+    delay(5000);
+    Serial.println("heartbeatafter");
+    vibrationModule = new VibrationModule(PIN_VIBRATION_MODULE);
+    Serial.println("vibration");
+    delay(5000);
+    Serial.println("vibrationafter");
+
+
 
     display = new Display();
-    display->drawString("Booting up...");
-
-    heartbeatSensor = new HeartbeatSensor(PIN_HEARTBEAT_SENSOR);
-    accelerometerSensor = new AccelerometerSensor();
-    vibrationModule = new VibrationModule(PIN_VIBRATION_MODULE);
-    touchSensor = new TouchSensor(PIN_TOUCH_SENSOR);
-    communicationModule = new CommunicationModule();
-    
-    display->drawString("Connecting...");
-
-    while (!communicationModule->checkConnection()) {
-        delay(1000);
-    }
-    communicationModule->initNetwork();
+    display->drawCenter("Limfy.");
+    delay(1000);
 
     digitalWrite(13, HIGH);
-
-    display->drawString("Data...");
+    display->drawCenter("Hi!");
+    Serial.println("on");
 }
 
 void loop()
 {    
     if (heartbeatSensor->fetchData()) {
-        heartrate = dataProcessor->getHeartrateData(heartbeatSensor->getAllMeasurements());        
-        heartbeatSensor->clearMeasurements();
-
+        heartrate = heartbeatSensor->getHeartrate();
         display->drawHeartrate(heartrate);
         display->drawAccelerometerData(steps, shakiness);
-
+        
         heartrate = steps = shakiness = 0;
     }
 
     if (accelerometerSensor->fetchData()) {
-        steps += dataProcessor->getAccelerometerSteps(accelerometerSensor->getAllMeasurements());
-        shakiness += dataProcessor->getAccelerometerShakiness(accelerometerSensor->getAllMeasurements());
+        steps += accelerometerSensor->getSteps();
+        shakiness += accelerometerSensor->getShakiness();
         accelerometerSensor->clearMeasurements();
+        delay(200);
     }
 
     if (touchSensor->isTouched()) {
-        vibrationModule->vibrate(30);
+        Serial.println("beforesend");
+        vibrationModule->vibrate(60);
+        communicationModule->sendData();
+        Serial.println("aftersend");
+        delay(20000);
     }
 
     delay(10);
