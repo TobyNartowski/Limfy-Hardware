@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <U8g2lib.h>
+#include <ArduinoJson.h>
 
 #include <Config.h>
 #include <device/HeartbeatSensor.h>
@@ -17,91 +18,88 @@ VibrationModule *vibrationModule;
 TouchSensor *touchSensor;
 CommunicationModule *communicationModule;
 
-uint8_t heartrate = 0, steps = 0;
+uint16_t totalSteps = 0;
+uint8_t heartrate = 0, steps = 0, stepsBefore = 0;
 uint16_t shakiness = 0;
+unsigned long connectionMillis = 0;
+
+String getParsedJsonData()
+{
+    String result;
+    StaticJsonDocument<JSON_OBJECT_SIZE(3)> doc;
+    doc["heartrate"] = heartrate;
+    doc["steps"] = steps;
+    doc["shakiness"] = shakiness;
+    serializeJson(doc, result);
+    return result;
+}
 
 void setup()
 {
-    uint8_t bootCounter = 0;
-
-    Serial.begin(9600);
+    Serial.begin(115200);
     pinMode(13, OUTPUT);
     digitalWrite(13, LOW);
 
+    display = new Display();
+    display->drawCenter("Limfy.");
+
+    communicationModule = new CommunicationModule();
+    communicationModule->check();
+
+    heartbeatSensor = new HeartbeatSensor();
+    delay(1000);
+    vibrationModule = new VibrationModule(PIN_VIBRATION_MODULE);
+    delay(1000);
+
     touchSensor = new TouchSensor(PIN_TOUCH_SENSOR);
-    Serial.println("touch");
-    delay(5000);
-    Serial.println("touchafter");
+    delay(1000);
     
     accelerometerSensor = new AccelerometerSensor();
-    Serial.println("accelerometer");
-    delay(5000);
-    Serial.println("accelerometerafter");
+    delay(1000);
 
     delay(500);
 
-    Serial.println("init");
-    communicationModule = new CommunicationModule();
-     while (!communicationModule->checkConnection()) {
-        delay(5000);
-        bootCounter++;
-        if (bootCounter > 4) {
-            communicationModule->reset();
-            bootCounter = 0;
-        }
-    }
-
-    Serial.println("afterinit");
-    delay(2000);
-    Serial.println("network");
-    communicationModule->initNetwork();
-    Serial.println("afternetwork");
-    delay(5000);
-    Serial.println("afternetworkdelay");
-
-    heartbeatSensor = new HeartbeatSensor();
-    Serial.println("heartbeat");
-    delay(5000);
-    Serial.println("heartbeatafter");
-    vibrationModule = new VibrationModule(PIN_VIBRATION_MODULE);
-    Serial.println("vibration");
-    delay(5000);
-    Serial.println("vibrationafter");
-
-
-
-    display = new Display();
-    display->drawCenter("Limfy.");
-    delay(1000);
-
     digitalWrite(13, HIGH);
-    display->drawCenter("Hi!");
-    Serial.println("on");
+    display->drawCenter("Witaj!");
+    delay(1500);
+    
+    display->drawHeartrate(heartrate);
+    display->drawSteps(totalSteps);
+    connectionMillis = millis();
 }
 
 void loop()
-{    
+{
+    if (millis() - connectionMillis > 60000) {
+        communicationModule->check();
+        connectionMillis = millis();
+    }
+ 
     if (heartbeatSensor->fetchData()) {
         heartrate = heartbeatSensor->getHeartrate();
+
+        vibrationModule->vibrate(30, 60);
+        delay(1000);
+        communicationModule->sendData(getParsedJsonData());
+        vibrationModule->vibrate(50, 60);
+
+        totalSteps += steps;
+
+        display->drawSteps(totalSteps);
         display->drawHeartrate(heartrate);
-        display->drawAccelerometerData(steps, shakiness);
-        
         heartrate = steps = shakiness = 0;
     }
 
     if (accelerometerSensor->fetchData()) {
         steps += accelerometerSensor->getSteps();
         shakiness += accelerometerSensor->getShakiness();
+        
         accelerometerSensor->clearMeasurements();
         delay(200);
     }
 
     if (touchSensor->isTouched()) {
-        Serial.println("beforesend");
-        vibrationModule->vibrate(60);
-        communicationModule->sendData();
-        Serial.println("aftersend");
-        delay(20000);
+        vibrationModule->vibrate(255, 60);
     }
 
     delay(10);

@@ -1,7 +1,5 @@
 #include "VibrationModule.h"
 
-#include <Arduino.h>
-
 VibrationModule::VibrationModule(int modulePin)
 {
     pinMode(modulePin, OUTPUT);
@@ -9,16 +7,9 @@ VibrationModule::VibrationModule(int modulePin)
     timestamp = millis();
 }
 
-void VibrationModule::vibrate(unsigned long ms)
+void VibrationModule::vibrate(uint8_t strength, unsigned long ms)
 {
-    analogWrite(modulePin, 255);
+    analogWrite(modulePin, strength);
     delay(ms);
     analogWrite(modulePin, 0);
-}
-
-void VibrationModule::vibrateNotification()
-{
-    vibrate(50);
-    delay(50);
-    vibrate(100);
 }

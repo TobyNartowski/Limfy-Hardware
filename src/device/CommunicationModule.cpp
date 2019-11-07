@@ -3,16 +3,17 @@
 CommunicationModule::CommunicationModule()
 {
     com = new SoftwareSerial(PIN_SIM_RX, PIN_SIM_TX);
+    pinMode(PIN_SIM_RESET, OUTPUT);
+    digitalWrite(PIN_SIM_RESET, LOW);
 
     pinMode(PIN_SIM_TRANSISTOR, OUTPUT);
     digitalWrite(PIN_SIM_TRANSISTOR, LOW);
     delay(3000);
     digitalWrite(PIN_SIM_TRANSISTOR, HIGH);
     
-    pinMode(PIN_SIM_RESET, OUTPUT);
+    delay(1000);
     digitalWrite(PIN_SIM_RESET, HIGH);
 
-    delay(2000);
     com->begin(9600);
 }
 
@@ -34,46 +35,74 @@ String CommunicationModule::readSerial(unsigned long timeout)
 
 void CommunicationModule::reset()
 {
+    digitalWrite(PIN_SIM_RESET, LOW);
+    delay(500);
+
     digitalWrite(PIN_SIM_TRANSISTOR, LOW);
     delay(500);
     digitalWrite(PIN_SIM_TRANSISTOR, HIGH);
     
     delay(500);
-
-    digitalWrite(PIN_SIM_RESET, LOW);
-    delay(500);
     digitalWrite(PIN_SIM_RESET, HIGH);
 }
 
-bool CommunicationModule::checkConnection()
+void CommunicationModule::checkConnection()
 {
-    Serial.println("incheck");
-    String result = executeCommand("AT+CREG?", 300);
-    return result[result.indexOf("+CREG:") + 9] == '1';
+    String result = executeCommand("AT+CREG?", 700);
+
+    while (result[result.indexOf("+CREG:") + 9] != '1') {
+        delay(3000);
+        bootCounter++;
+
+        if (bootCounter > 5) {
+            Serial.println("[SIM800L] reset");
+            reset();
+            bootCounter = 0;
+        }
+        result = executeCommand("AT+CREG?", 700);
+    } 
 }
 
 void CommunicationModule::initNetwork()
 {
     com->flush();
-    executeCommand("AT", 300);
-    delay(500);
-    executeCommand("AT+SAPBR=3, 1, \"APN\", \"internet\"", 1000);
-    delay(500);
-    executeCommand("AT+SAPBR=1, 1", 1000);
-    delay(500);
+
+    executeCommand("AT", 1000);
+    executeCommand("AT+SAPBR=3, 1, \"APN\", \"internet\"", 2000);
+    executeCommand("AT+SAPBR=1, 1", 3000);
     executeCommand("AT+HTTPINIT", 1000);
-    delay(1000);
 }
 
-void CommunicationModule::sendData()
+void CommunicationModule::check()
+{
+    String connection = executeCommand("AT+CREG?", 700);
+    if (connection[connection.indexOf("+CREG:") + 9] != '1') {
+        Serial.println("[SIM800L] not ok");
+        do {
+            Serial.println("[SIM800L] check");
+            checkConnection();
+            delay(1000);
+            
+            Serial.println("[SIM800L] init");
+            initNetwork();
+            delay(300);
+            connection = executeCommand("AT+CREG?", 700);
+        } while (connection[connection.indexOf("+CREG:") + 9] != '1');
+    }
+    Serial.println("[SIM800L] ok");
+}
+
+void CommunicationModule::sendData(String data)
 {
     com->flush();
     
-    executeCommand("AT+HTTPPARA=\"URL\", \"http://sim800.free.beeceptor.com/api/measurements\"", 300);
-    executeCommand("AT+HTTPPARA=\"CONTENT\", \"application/x-www-form-urlencoded\"", 300);
-    executeCommand("AT+HTTPDATA=8, 2000", 300);
-    executeCommand(String(millis()), 1000);
-    executeCommand("AT+HTTPACTION=1", 500);
+    executeCommand("AT+HTTPPARA=\"URL\", \"http://limfy.free.beeceptor.com/api/measurements\"", 1000);
+    executeCommand("AT+HTTPPARA=\"CONTENT\", \"application/json\"", 600);
+    executeCommand("AT+HTTPDATA=64, 3000", 1000);
+    executeCommand(data, 500);
+    delay(3000);
+
+    executeCommand("AT+HTTPACTION=1", 1000);
 }
 
 String CommunicationModule::executeCommand(String command, unsigned long delayMs) {
@@ -87,10 +116,6 @@ String CommunicationModule::executeCommand(String command, unsigned long delayMs
         response.concat(com->readString());
         delay(10);
     }
- 
-    response.remove(0, command.length());
-    response.trim();
 
     return response;
 }
- 

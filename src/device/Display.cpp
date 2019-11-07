@@ -14,22 +14,18 @@ void Display::drawCenter(String text)
 
 void Display::drawHeartrate(uint8_t heartrate)
 {
-    display.clearLine(0);
-    display.clearLine(1);
+    display.clearLine(2);
+    display.clearLine(3);
     if (heartrate == 0) {
-        display.drawString(0, 0, "No data");
+        display.drawString(0, 10, "Brak danych");
     } else {
-        display.drawString(0, 0, ("BPM: " + String(heartrate)).c_str());
+        display.drawString(0, 10, ("Puls: " + (String(heartrate) + " BPM")).c_str());
     }
 }
 
-void Display::drawAccelerometerData(uint8_t steps, uint8_t shakiness)
+void Display::drawSteps(uint16_t steps)
 {
-    display.clearLine(2);
-    display.clearLine(3);
-    display.drawString(0, 10, ("Steps: " + String(steps)).c_str());
-
     display.clearLine(4);
     display.clearLine(5);
-    display.drawString(0, 20, ("Shakiness: " + String(shakiness)).c_str());
+    display.drawString(0, 20, ("Kroki: " + String(steps)).c_str());
 }
