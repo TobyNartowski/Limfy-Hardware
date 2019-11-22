@@ -1,7 +1,10 @@
 #include "AccelerometerSensor.h"
 
+#include <Wire.h>
+
 AccelerometerSensor::AccelerometerSensor()
 {
+    Wire.begin(PIN_ACCELEROMETER_SDA, PIN_ACCELEREMOTER_SCL);
     sensor.begin();
     sensor.setRange(LIS3DH_RANGE_4_G);
     timestamp = millis();

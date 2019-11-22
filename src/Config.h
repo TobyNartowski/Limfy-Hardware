@@ -1,13 +1,12 @@
 #pragma once
 
 /* Pins */
-#define PIN_HEARTBEAT_SENSOR A0
-#define PIN_VIBRATION_MODULE 5
-#define PIN_TOUCH_SENSOR 6
-#define PIN_SIM_RX 8
-#define PIN_SIM_TX 7
-#define PIN_SIM_TRANSISTOR 3
-#define PIN_SIM_RESET 2
+#define PIN_HEARTBEAT_SENSOR 12
+#define PIN_ACCELEROMETER_SDA 17
+#define PIN_ACCELEREMOTER_SCL 16
+#define PIN_CHARGING_INPUT 25
+#define PIN_CHARGING_LED 23
+#define PIN_BOARD_LED
 
 /* Heartbeat data */
 #define HEARTBEAT_THRESHOLD 128
