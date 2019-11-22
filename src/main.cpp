@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <ArduinoJson.h>
 
 #include <Config.h>
 #include <device/HeartbeatSensor.h>
@@ -11,48 +10,43 @@ HeartbeatSensor *heartbeatSensor;
 AccelerometerSensor *accelerometerSensor;
 CommunicationModule *communicationModule;
 
-uint16_t totalSteps = 0;
-uint8_t heartrate = 0, steps = 0, stepsBefore = 0;
+uint8_t heartbeat = 0, steps = 0;
 uint16_t shakiness = 0;
-
-String getParsedJsonData()
-{
-    String result;
-    StaticJsonDocument<JSON_OBJECT_SIZE(3)> doc;
-    doc["heartrate"] = heartrate;
-    doc["steps"] = steps;
-    doc["shakiness"] = shakiness;
-    serializeJson(doc, result);
-    return result;
-}
 
 void setup()
 {
     Serial.begin(115200);
-    pinMode(22, OUTPUT);
-    digitalWrite(22, HIGH);
+    pinMode(PIN_BOARD_LED, OUTPUT);
+    digitalWrite(PIN_BOARD_LED, HIGH);    
 
-    communicationModule = new CommunicationModule();
     heartbeatSensor = new HeartbeatSensor();
     accelerometerSensor = new AccelerometerSensor();
+    communicationModule = new CommunicationModule();
 
-    digitalWrite(22, LOW);
+    pinMode(PIN_CHARGING_LED, OUTPUT);
+    digitalWrite(PIN_CHARGING_LED, HIGH);
+    digitalWrite(PIN_BOARD_LED, LOW);
 }
 
 void loop()
-{ 
+{
     if (heartbeatSensor->fetchData()) {
-        heartrate = heartbeatSensor->getHeartrate();
+        heartbeat = heartbeatSensor->getHeartrate();
 
-        totalSteps += steps;
-        Serial.println(getParsedJsonData());
-        heartrate = steps = shakiness = 0;
+        if (shakiness < ACCELEROMETER_STEPS_SHAKE_THRESHOLD) {
+            steps = 0;
+        }
+
+        communicationModule->setHeartbeat(heartbeat);
+        heartbeat = steps = shakiness = 0;
     }
 
     if (accelerometerSensor->fetchData()) {
         steps += accelerometerSensor->getSteps();
         shakiness += accelerometerSensor->getShakiness();
         
+        communicationModule->setSteps(steps);
+        communicationModule->setShakiness(shakiness);
         accelerometerSensor->clearMeasurements();
     }
 
