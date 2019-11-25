@@ -16,5 +16,5 @@ public:
 
     void setHeartbeat(uint8_t heartbeat);
     void setSteps(uint8_t steps);
-    void setShakiness(uint16_t shakiness);
+    void setShakiness(uint8_t shakiness);
 };

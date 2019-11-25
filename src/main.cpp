@@ -10,9 +10,6 @@ HeartbeatSensor *heartbeatSensor;
 AccelerometerSensor *accelerometerSensor;
 CommunicationModule *communicationModule;
 
-uint8_t heartbeat = 0, steps = 0;
-uint16_t shakiness = 0;
-
 void setup()
 {
     Serial.begin(115200);
@@ -31,20 +28,17 @@ void setup()
 void loop()
 {
     if (heartbeatSensor->fetchData()) {
-        heartbeat = heartbeatSensor->getHeartrate();
+        communicationModule->setHeartbeat(heartbeatSensor->getHeartrate());
+    }
+
+    if (accelerometerSensor->fetchData()) {
+        uint8_t steps = accelerometerSensor->getSteps();
+        uint8_t shakiness = accelerometerSensor->getShakiness();
 
         if (shakiness < ACCELEROMETER_STEPS_SHAKE_THRESHOLD) {
             steps = 0;
         }
 
-        communicationModule->setHeartbeat(heartbeat);
-        heartbeat = steps = shakiness = 0;
-    }
-
-    if (accelerometerSensor->fetchData()) {
-        steps += accelerometerSensor->getSteps();
-        shakiness += accelerometerSensor->getShakiness();
-        
         communicationModule->setSteps(steps);
         communicationModule->setShakiness(shakiness);
         accelerometerSensor->clearMeasurements();

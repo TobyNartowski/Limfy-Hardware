@@ -7,11 +7,11 @@ CommunicationModule::CommunicationModule()
     service = server->createService("43428fb9-22dd-4d10-96e1-b32477365024");
 
     heartbeatCharacteristic = new BLECharacteristic("5168996b-625b-4d5d-ad14-fc30d0b91fcc", 
-        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
     stepsCharacteristic = new BLECharacteristic("72a590ba-09fe-4e88-a8d0-508d6c001b43", 
-        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
     shakinessCharacteristic = new BLECharacteristic("cc4616ac-b55a-4d4d-8cd4-034ba13dd56a", 
-        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
 
     service->addCharacteristic(shakinessCharacteristic);
     service->addCharacteristic(stepsCharacteristic);
@@ -33,8 +33,8 @@ void CommunicationModule::setSteps(uint8_t steps)
     stepsCharacteristic->notify();
 }
 
-void CommunicationModule::setShakiness(uint16_t shakiness)
+void CommunicationModule::setShakiness(uint8_t shakiness)
 {
-    shakinessCharacteristic->setValue(shakiness);
+    shakinessCharacteristic->setValue(&shakiness, sizeof(uint8_t));
     shakinessCharacteristic->notify();
 }
