@@ -16,7 +16,8 @@ CommunicationModule::CommunicationModule()
     service->addCharacteristic(shakinessCharacteristic);
     service->addCharacteristic(stepsCharacteristic);
     service->addCharacteristic(heartbeatCharacteristic);
-    
+    server->setCallbacks(new ServerCallbacks());
+
     service->start();
     server->getAdvertising()->start();
 }

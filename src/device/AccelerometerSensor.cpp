@@ -17,7 +17,7 @@ bool AccelerometerSensor::fetchData()
         uint16_t measurement = abs(sensor.x + sensor.y + sensor.z);
         if (pointer) {
             int16_t comparison = abs(measurement - buffer);
-            if (comparison > ACCELEROMETER_STEPS_THRESHOLD && abs(pointer - detect) > 10) {
+            if (comparison > ACCELEROMETER_STEPS_THRESHOLD && abs(pointer - detect) > 20) {
                 stepsCounter++;
                 detect = pointer;
             }

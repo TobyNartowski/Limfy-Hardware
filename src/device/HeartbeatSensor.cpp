@@ -3,11 +3,11 @@
 HeartbeatSensor::HeartbeatSensor() {
     timestamp = millis();
     adc2_config_channel_atten(PIN_HEARTBEAT_SENSOR, ADC_ATTEN_0db);
+    data = (int *) malloc(sizeof(int));
 }
 
 bool HeartbeatSensor::fetchData() {
     if (millis() - timestamp > HEARTBEAT_SAMPLING_DELAY) {
-        int *data = (int *) malloc(sizeof(int));
         adc2_get_raw(PIN_HEARTBEAT_SENSOR, ADC_WIDTH_12Bit, data);
 
         if ((*data) >= HEARTBEAT_THRESHOLD) {

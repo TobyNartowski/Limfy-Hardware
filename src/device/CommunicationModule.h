@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include <BLEDevice.h>
 
+#include <Config.h>
+
 class CommunicationModule {
 private:
     BLEServer *server;
@@ -11,6 +13,17 @@ private:
     BLECharacteristic *heartbeatCharacteristic;
     BLECharacteristic *stepsCharacteristic;
     BLECharacteristic *shakinessCharacteristic;
+
+    class ServerCallbacks : public BLEServerCallbacks {
+    public:
+        void onConnect(BLEServer* pServer) override {
+            digitalWrite(PIN_CONNECT_LED, HIGH);
+        }
+
+	    void onDisconnect(BLEServer* pServer) override {
+            digitalWrite(PIN_CONNECT_LED, LOW);
+        }
+    };
 public:
     CommunicationModule();
 
