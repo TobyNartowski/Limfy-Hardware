@@ -12,10 +12,12 @@ private:
     unsigned long timestamp;
     uint16_t buffer = 0;
     uint8_t detect = 0, stepsCounter = 0, shakeCounter = 0;
+    bool fallDetected = false;
 public:
     AccelerometerSensor();
     bool fetchData();
     uint8_t getSteps();
     uint8_t getShakiness();
+    bool isFallDetected();
     void clearMeasurements();
 };

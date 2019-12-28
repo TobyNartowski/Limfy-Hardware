@@ -16,7 +16,7 @@ bool AccelerometerSensor::fetchData()
         sensor.read();
         uint16_t measurement = abs(sensor.x + sensor.y + sensor.z);
         if (pointer) {
-            int16_t comparison = abs(measurement - buffer);
+            int32_t comparison = abs(measurement - buffer);
             if (comparison > ACCELEROMETER_STEPS_THRESHOLD && abs(pointer - detect) > 20) {
                 stepsCounter++;
                 detect = pointer;
@@ -25,6 +25,11 @@ bool AccelerometerSensor::fetchData()
             if (comparison > ACCELEROMETER_SHAKE_THRESHOLD) {
                 shakeCounter++;
             }
+
+            if (comparison >= ACCELEROMETER_FALL_THRESHOLD) {
+                fallDetected = true;
+            }
+            Serial.println(comparison);
         }
 
         buffer = measurement;
@@ -45,7 +50,13 @@ uint8_t AccelerometerSensor::getShakiness()
     return shakeCounter;
 }
 
+bool AccelerometerSensor::isFallDetected()
+{
+    return fallDetected;
+}
+
 void AccelerometerSensor::clearMeasurements()
 {
     pointer = buffer = detect = stepsCounter = shakeCounter = 0;
+    fallDetected = false;
 }

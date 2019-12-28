@@ -13,6 +13,7 @@ private:
     BLECharacteristic *heartbeatCharacteristic;
     BLECharacteristic *stepsCharacteristic;
     BLECharacteristic *shakinessCharacteristic;
+    BLECharacteristic *fallCharacteristic;
 
     class ServerCallbacks : public BLEServerCallbacks {
     public:
@@ -30,4 +31,5 @@ public:
     void setHeartbeat(uint8_t heartbeat);
     void setSteps(uint8_t steps);
     void setShakiness(uint8_t shakiness);
+    void fallDetected(uint8_t value);
 };

@@ -12,7 +12,11 @@ CommunicationModule::CommunicationModule()
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
     shakinessCharacteristic = new BLECharacteristic("cc4616ac-b55a-4d4d-8cd4-034ba13dd56a", 
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
+    fallCharacteristic = new BLECharacteristic("ec8357c6-6bde-4275-b03b-bbfa16cd2a47", 
+        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
+        
 
+    service->addCharacteristic(fallCharacteristic);
     service->addCharacteristic(shakinessCharacteristic);
     service->addCharacteristic(stepsCharacteristic);
     service->addCharacteristic(heartbeatCharacteristic);
@@ -38,4 +42,10 @@ void CommunicationModule::setShakiness(uint8_t shakiness)
 {
     shakinessCharacteristic->setValue(&shakiness, sizeof(uint8_t));
     shakinessCharacteristic->notify();
+}
+
+void CommunicationModule::fallDetected(uint8_t value)
+{
+    fallCharacteristic->setValue(&value, sizeof(uint8_t));
+    fallCharacteristic->notify();
 }

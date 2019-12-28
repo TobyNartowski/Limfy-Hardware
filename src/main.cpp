@@ -28,7 +28,7 @@ void setup()
     accelerometerSensor = new AccelerometerSensor();
     communicationModule = new CommunicationModule();
 
-    digitalWrite(PIN_BOARD_LED, LOW);
+    digitalWrite(PIN_BOARD_LED, HIGH);
 }
 
 void blinkChargingLed()
@@ -58,6 +58,7 @@ void loop()
                 steps = 0;
             }
 
+            communicationModule->fallDetected((uint8_t) accelerometerSensor->isFallDetected());
             communicationModule->setSteps(steps);
             communicationModule->setShakiness(shakiness);
             accelerometerSensor->clearMeasurements();
