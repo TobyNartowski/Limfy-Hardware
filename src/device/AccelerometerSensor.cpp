@@ -29,7 +29,6 @@ bool AccelerometerSensor::fetchData()
             if (comparison >= ACCELEROMETER_FALL_THRESHOLD) {
                 fallDetected = true;
             }
-            Serial.println(comparison);
         }
 
         buffer = measurement;
